@@ -1,0 +1,11 @@
+{
+  "title": "HelvetiStart",
+  "description": "Guides users through a personalized Swiss stay with a step-by-step timeline, task checklists, and tools to manage essential travel steps efficiently.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

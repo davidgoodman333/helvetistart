@@ -123,8 +123,11 @@ export type IngestResult = {
   changed: { id: string; title: string; url: string; topic: string }[];
 };
 
-/** (Re)build the whole knowledge base from the curated sources. */
-export async function ingestAll(): Promise<IngestResult> {
+/**
+ * (Re)build the knowledge base from the curated sources: all of them, or only
+ * the ones named in `onlyIds` (to add a new source without re-reading the rest).
+ */
+export async function ingestAll(onlyIds?: string[]): Promise<IngestResult> {
   const perSource: IngestResult["perSource"] = [];
 
   const insert = db.prepare(`
@@ -151,6 +154,7 @@ export async function ingestAll(): Promise<IngestResult> {
   for (const { source_id } of stored) if (!known.has(source_id)) clearSource.run(source_id);
 
   for (const src of SOURCES) {
+    if (onlyIds && !onlyIds.includes(src.id)) continue;
     try {
       const text = await loadSourceText(src);
       if (text.length < 200) {
@@ -520,8 +524,30 @@ export function kbStatus() {
       n: number;
     }
   ).n;
-  const { lastChecked } = db
-    .prepare("SELECT MAX(checked_at) AS lastChecked FROM kb_sources")
-    .get() as { lastChecked: string | null };
-  return { chunks, sources, ready: chunks > 0, embedModel: EMBED_MODEL, stale, lastChecked };
+  // The last full refresh; before the first one, the newest source check.
+  const lastFullRefresh = (
+    db.prepare("SELECT value FROM kb_meta WHERE key = 'last_full_refresh'").get() as
+      | { value: string }
+      | undefined
+  )?.value ?? null;
+  const lastChecked =
+    lastFullRefresh ??
+    (db.prepare("SELECT MAX(checked_at) AS t FROM kb_sources").get() as { t: string | null }).t;
+  return {
+    chunks,
+    sources,
+    ready: chunks > 0,
+    embedModel: EMBED_MODEL,
+    stale,
+    lastChecked,
+    lastFullRefresh,
+  };
+}
+
+/** Record that every source has just been re-read (called after a full ingest). */
+export function markFullRefresh() {
+  db.prepare(
+    `INSERT INTO kb_meta (key, value) VALUES ('last_full_refresh', datetime('now'))
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+  ).run();
 }

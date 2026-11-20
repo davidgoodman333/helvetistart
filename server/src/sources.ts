@@ -498,6 +498,18 @@ export const SOURCES: Source[] = [
     lang: "de",
     authority: "official",
   },
+  // How the online application is handed in: the release receipt
+  // (Freigabequittung) and any documents not uploaded go by post.
+  {
+    id: "asv-premium-reduction-apply",
+    title:
+      "Applying for premium reduction (Prämienverbilligung beantragen): online application, release receipt (Freigabequittung) by post — Canton of Bern social insurance office",
+    url: "https://www.asv.dij.be.ch/de/start/themen/pv/pv_anrecht-auf-pv-beantragen.html",
+    topic: "insurance",
+    appliesTo: "all",
+    lang: "de",
+    authority: "official",
+  },
 
   // --- SEM: permits and entry (added with the 2026 site restructure) ----------
   {

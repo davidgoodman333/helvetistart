@@ -101,6 +101,16 @@ db.exec(`
   );
 `);
 
+// When the last FULL refresh of the sources finished. A partial or interrupted
+// run updates some sources' checked_at, so that alone can't say the whole
+// knowledge base is current.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS kb_meta (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
+`);
+
 // The "Ask HelvetiStart" conversation, per user, so the assistant remembers what
 // was said earlier and a returning student can continue where they left off.
 db.exec(`
